@@ -3,41 +3,423 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VRP Quant</title>
+<title>VRP Quant — Quantitative Options Research Terminal</title>
+<meta name="description" content="A research terminal for options premium sellers. Black-Scholes Greeks, 200-step CRR binomial pricing, jump-diffusion Monte Carlo, GARCH volatility, and walk-forward backtesting on liquid US equities, ETFs and major crypto.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #0B0F19;
-    color: #F8FAFC;
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    text-align: center;
-  }
-  .wrap { padding: 40px; }
-  h1 { color: #38BDF8; font-size: 2.2rem; margin: 0 0 12px; letter-spacing: -0.5px; }
-  p  { color: #94A3B8; font-size: 1.05rem; margin: 0 0 28px; }
-  a.btn {
-    display: inline-block;
-    padding: 12px 26px;
-    border: 1px solid #38BDF8;
-    border-radius: 6px;
-    color: #38BDF8;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  a.btn:hover { background: #082F49; }
-  .note { margin-top: 36px; font-size: 0.78rem; color: #475569; }
+:root{
+  --ink:#0B0F19;
+  --panel:#0F172A;
+  --line:#1E293B;
+  --rule:#334155;
+  --text:#E2E8F0;
+  --muted:#94A3B8;
+  --dim:#64748B;
+  --accent:#38BDF8;
+  --warn:#F59E0B;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box}
+
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--text);
+  font-family:var(--serif);
+  font-size:19px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+
+.page{max-width:760px;margin:0 auto;padding:0 24px}
+
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* ---------- hero ---------- */
+
+header.masthead{padding:72px 0 0}
+
+.wordmark{
+  font-family:var(--mono);
+  font-size:13px;
+  letter-spacing:.14em;
+  color:var(--accent);
+  margin:0 0 40px;
+}
+
+h1{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:clamp(2.1rem,5.5vw,3.1rem);
+  line-height:1.15;
+  letter-spacing:-.02em;
+  margin:0 0 20px;
+  color:#F8FAFC;
+  max-width:16ch;
+}
+
+.standfirst{
+  font-size:1.12rem;
+  color:var(--muted);
+  margin:0 0 40px;
+  max-width:60ch;
+}
+
+/* ---------- specimen: real terminal output ---------- */
+
+.specimen{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-left:3px solid var(--accent);
+  border-radius:4px;
+  padding:20px 22px;
+  font-family:var(--mono);
+  font-size:12.5px;
+  line-height:1.9;
+  color:var(--muted);
+  overflow-x:auto;
+  white-space:nowrap;
+}
+.specimen b{color:var(--accent);font-weight:600}
+.specimen .lbl{color:var(--dim)}
+.specimen-note{
+  font-size:.82rem;
+  color:var(--dim);
+  margin:12px 0 0;
+  white-space:normal;
+}
+
+/* ---------- buttons ---------- */
+
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin:36px 0 0}
+
+.btn{
+  display:inline-block;
+  font-family:var(--mono);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.02em;
+  padding:13px 24px;
+  border-radius:4px;
+  text-decoration:none;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  background:transparent;
+}
+.btn:hover{background:#082F49}
+.btn-solid{background:var(--accent);color:#04121F;border-color:var(--accent)}
+.btn-solid:hover{background:#7DD3FC;border-color:#7DD3FC}
+.btn-quiet{border-color:var(--rule);color:var(--muted)}
+.btn-quiet:hover{background:var(--panel)}
+
+/* ---------- sections ---------- */
+
+section{padding:64px 0 0}
+
+h2{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:1.55rem;
+  letter-spacing:-.01em;
+  color:#F8FAFC;
+  margin:0 0 8px;
+  padding-top:56px;
+  border-top:1px solid var(--line);
+}
+
+h3{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.12em;
+  color:var(--accent);
+  margin:36px 0 10px;
+}
+
+p{max-width:66ch}
+
+.lede{color:var(--muted);margin:0 0 4px;max-width:64ch}
+
+ul{padding-left:0;list-style:none;margin:0;max-width:66ch}
+li{
+  padding:10px 0 10px 20px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+  font-size:1rem;
+}
+li:before{
+  content:"";
+  position:absolute;
+  left:0;top:22px;
+  width:7px;height:1px;
+  background:var(--rule);
+}
+li b{color:#F8FAFC;font-weight:600}
+li code{font-family:var(--mono);font-size:.86em;color:var(--accent)}
+
+/* ---------- screenshot slot ---------- */
+
+figure{margin:28px 0 0}
+figure img{width:100%;display:block;border:1px solid var(--line);border-radius:4px}
+figcaption{font-size:.85rem;color:var(--dim);margin-top:10px}
+
+.shot-placeholder{
+  border:1px dashed var(--rule);
+  border-radius:4px;
+  padding:56px 24px;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--dim);
+  line-height:1.8;
+}
+
+/* ---------- data source table ---------- */
+
+table{width:100%;border-collapse:collapse;margin-top:22px;font-size:.95rem}
+th,td{text-align:left;padding:11px 12px 11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.1em;
+  color:var(--dim);
+}
+td:first-child{font-family:var(--mono);font-size:.84rem;color:#F8FAFC;white-space:nowrap;padding-right:24px}
+
+/* ---------- pricing ---------- */
+
+.tiers{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}
+@media (max-width:640px){.tiers{grid-template-columns:1fr}}
+
+.tier{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:24px 22px}
+.tier.featured{border-color:var(--accent)}
+
+.tier h4{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.12em;
+  color:var(--accent);
+  margin:0 0 14px;
+}
+.price{font-size:2.1rem;font-weight:600;color:#F8FAFC;line-height:1.1}
+.price span{font-size:.95rem;color:var(--muted);font-weight:400}
+.was{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin:6px 0 18px}
+.was s{text-decoration:line-through}
+.tier ul{margin:0 0 22px}
+.tier li{font-size:.93rem;padding:8px 0 8px 20px}
+.tier li:last-child{border-bottom:none}
+.tier li:before{top:19px}
+.tier .btn{width:100%;text-align:center}
+
+/* ---------- disclosure ---------- */
+
+.disclosure{
+  margin:64px 0 0;
+  padding:20px 22px;
+  background:var(--panel);
+  border-left:4px solid var(--warn);
+  border-radius:4px;
+  font-size:.86rem;
+  line-height:1.75;
+  color:var(--muted);
+}
+.disclosure strong{color:#F8FAFC}
+.disclosure p{max-width:none;margin:0 0 12px}
+.disclosure p:last-child{margin:0}
+
+footer{
+  padding:40px 0 72px;
+  margin-top:32px;
+  border-top:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:11.5px;
+  color:var(--dim);
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--accent)}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>VRP Quant</h1>
-    <p>Quantitative options research terminal.</p>
-    <a class="btn" href="https://vrpquant.streamlit.app">Launch Terminal &rarr;</a>
-    <div class="note">Placeholder page &mdash; full product description coming soon.</div>
+
+<div class="page">
+
+<header class="masthead">
+  <p class="wordmark">VRP QUANT</p>
+
+  <h1>Price the trade before you put it on.</h1>
+
+  <p class="standfirst">A research terminal for options premium sellers. It prices any structure three
+  independent ways, simulates where the underlying can actually land, and shows what the strategy would
+  have done out of sample — on liquid US equities, ETFs and major crypto.</p>
+
+  <div class="specimen" aria-label="Example of terminal output">
+    <span class="lbl">$</span><b>247.31</b> <span class="lbl">via</span> alphavantage:quote
+    <span class="lbl">|</span> IV: 34.2% <span class="lbl">|</span> r: 4.312% <span class="lbl">[FRED:DGS3MO]</span><br>
+    <span class="lbl">CRR European</span> <b>$4.1827</b>
+    <span class="lbl">CRR American</span> <b>$4.2015</b>
+    <span class="lbl">Early-ex premium</span> <b>$0.0188</b><br>
+    <span class="lbl">Black-Scholes</span> <b>$4.1819</b>
+    <span class="lbl">Euro vs BS error</span> <b>0.019%</b>
+    <span class="lbl">MC POP net of premium</span> <b>71.4%</b>
   </div>
+  <p class="specimen-note">Every quote is stamped with the source it came from. Values shown are illustrative.</p>
+
+  <div class="actions">
+    <a class="btn btn-solid" href="#pricing">See pricing</a>
+    <a class="btn btn-quiet" href="https://vrpquant.streamlit.app">Open the terminal</a>
+  </div>
+</header>
+
+<section id="what">
+  <h2>What it computes</h2>
+  <p class="lede">Three pricing methods run on the same inputs, so disagreement between them is
+  information rather than something hidden behind a single number.</p>
+
+  <h3>PRICING</h3>
+  <ul>
+    <li><b>Black-Scholes</b> with all five Greeks — delta, gamma, theta, vega, rho — and a continuous
+    dividend yield applied once, in the right place.</li>
+    <li><b>200-step Cox-Ross-Rubinstein binomial tree</b>, European and American exercise computed in
+    parallel, so the early-exercise premium is reported as its own number instead of being buried in
+    the price.</li>
+    <li><b>Monte Carlo, 10,000 to 100,000 paths</b>, with Merton jump-diffusion and a drift compensator
+    that keeps the simulation risk-neutral.</li>
+    <li><b>Newton-Raphson implied volatility solver</b> for backing IV out of a market price.</li>
+  </ul>
+
+  <h3>PROBABILITY</h3>
+  <p>Probability of profit is computed from the seller's profit and loss, net of premium received — not
+  <code>P(ITM)</code>. A short put that finishes slightly in the money is often still a winner, and the
+  number here reflects that. Breakeven, expected P&amp;L and the full terminal distribution are shown
+  alongside it.</p>
+
+  <h3>SIGNAL AND VALIDATION</h3>
+  <ul>
+    <li><b>GARCH(1,1)</b> conditional volatility with a Kalman trend filter, fitted causally — no
+    information from the future leaks into any historical bar.</li>
+    <li><b>Anchored walk-forward optimisation.</b> Parameters are chosen on a training window and
+    evaluated only on the window that follows it. Slippage and commission are modelled.</li>
+    <li><b>Half-Kelly sizing</b>, volatility targeting and mean-variance weights for position sizing.</li>
+    <li><b>Variance risk premium</b> measured per name as implied minus realised volatility, scaled to
+    that name's own volatility regime.</li>
+  </ul>
+
+  <figure>
+    <!--
+      SCREENSHOT SLOT
+      ---------------
+      1. Run a Deep Dive in the terminal on a liquid name (SPY, AAPL, TSLA).
+      2. Screenshot the results and save the file as  screenshot.png
+      3. Upload screenshot.png to this repo (Add file > Upload files).
+      4. Delete the <div class="shot-placeholder"> block below, then remove
+         the comment markers around the <img> line beneath it.
+    -->
+    <div class="shot-placeholder">
+      screenshot.png not yet added<br>
+      see the comment in this page's source for how to drop it in
+    </div>
+    <!-- <img src="screenshot.png" alt="Deep Dive output showing Greeks, pricing convergence and the Monte Carlo terminal distribution"> -->
+    <figcaption>Deep Dive output for a single name.</figcaption>
+  </figure>
+</section>
+
+<section id="data">
+  <h2>Where the numbers come from</h2>
+  <p class="lede">Market data moves through a waterfall. If a source fails or is throttled the next one
+  takes over, and the terminal shows you on screen which one answered.</p>
+
+  <table>
+    <thead>
+      <tr><th>Source</th><th>Used for</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Alpha Vantage</td><td>Primary quotes and daily history</td></tr>
+      <tr><td>Google Finance</td><td>Real-time quote fallback</td></tr>
+      <tr><td>Polygon.io</td><td>Delayed NBBO snapshots and aggregates</td></tr>
+      <tr><td>yfinance</td><td>End-of-day backstop</td></tr>
+      <tr><td>FRED&nbsp;DGS3MO</td><td>Risk-free rate, taken from the Federal Reserve's published Treasury
+      constant-maturity series rather than a traded proxy ticker</td></tr>
+      <tr><td>NewsAPI</td><td>Per-ticker headlines</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="pricing">
+  <h2>Pricing</h2>
+  <p class="lede">Founding member rates. Month to month, cancel in PayPal at any time.</p>
+
+  <div class="tiers">
+    <div class="tier">
+      <h4>ANALYST</h4>
+      <div class="price">$119<span> / month</span></div>
+      <p class="was">Retail <s>$299</s></p>
+      <ul>
+        <li>Full Deep Dive on any ticker</li>
+        <li>All five Greeks, CRR tree, Monte Carlo</li>
+        <li>Walk-forward backtest and Half-Kelly sizing</li>
+        <li>Expected move cone and per-ticker news</li>
+      </ul>
+      <a class="btn" href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-4U294837R2974722VNJM2NSQ">Subscribe</a>
+    </div>
+
+    <div class="tier featured">
+      <h4>APEX ULTIMATE</h4>
+      <div class="price">$199<span> / month</span></div>
+      <p class="was">Retail <s>$399</s></p>
+      <ul>
+        <li>Everything in Analyst</li>
+        <li>Market Scanner across 12 sector universes</li>
+        <li>APEX-100 high-liquidity universe</li>
+        <li>Configurable Monte Carlo path count</li>
+      </ul>
+      <a class="btn btn-solid" href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-0VW55098V70850835NJM2PDQ">Subscribe</a>
+    </div>
+  </div>
+</section>
+
+<section id="fit">
+  <h2>Who this is not for</h2>
+  <p>It is not a signal service and it does not tell you what to buy. It assumes you already understand
+  options mechanics and want better numbers underneath decisions you are making yourself. If you are
+  looking for alerts to follow, or you have never sold a spread, this is the wrong tool and you will not
+  get value from it.</p>
+  <p>It is also not a broker. Nothing executes here. You take what the terminal gives you and place the
+  trade yourself, wherever you trade.</p>
+</section>
+
+<div class="disclosure">
+  <p><strong>Risk disclosure.</strong> VRP Quant is a quantitative research tool. It is not a registered
+  investment advisor, broker-dealer, or financial planner. All outputs, including Monte Carlo simulations
+  and HQTA Directives, are for informational and educational purposes only. Options trading carries a
+  substantial risk of total capital loss and is not suitable for all investors. Verify all data
+  independently and consult a licensed professional before deploying capital.</p>
+  <p><strong>Hypothetical performance.</strong> Backtested results shown in the terminal are hypothetical,
+  were not achieved with real capital, and have inherent limitations. They do not reflect the effect of
+  material economic and market factors on decision-making in live trading. Past performance is not
+  indicative of future results.</p>
+</div>
+
+<footer>
+  <span>© 2026 VRP Quant</span>
+  <span><a href="https://vrpquant.streamlit.app">Open the terminal</a></span>
+</footer>
+
+</div>
 </body>
 </html>
