@@ -1,425 +1,388 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VRP Quant — Quantitative Options Research Terminal</title>
-<meta name="description" content="A research terminal for options premium sellers. Black-Scholes Greeks, 200-step CRR binomial pricing, jump-diffusion Monte Carlo, GARCH volatility, and walk-forward backtesting on liquid US equities, ETFs and major crypto.">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VRP Quant v30.5.4 — Quantitative Options Research Terminal</title>
+<meta name="description" content="A variance risk premium research terminal for options sellers. Three pricing models, gap-aware volatility, and a verification report published for every build.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#0B0F19;
-  --panel:#0F172A;
-  --line:#1E293B;
-  --rule:#334155;
-  --text:#E2E8F0;
-  --muted:#94A3B8;
-  --dim:#64748B;
-  --accent:#38BDF8;
-  --warn:#F59E0B;
-  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --void:#080B12; --void2:#0C1119; --panel:#10151F; --panel2:#0D121B;
+  --border:#1C2432; --border-lt:#242E40;
+  --chalk:#EDEFF3; --mute:#8B93A6; --mute2:#5C6579;
+  --edge:#17C3B2; --edge-dim:#0D3F3A; --edge-glow:rgba(23,195,178,0.16);
+  --risk:#FF9F1C; --risk-dim:#3D2A0C;
+  --bad:#EF4444; --signal:#5B8DEF;
+  --disp:'Space Grotesk',sans-serif; --body:'IBM Plex Sans',sans-serif; --mono:'IBM Plex Mono',monospace;
 }
-
-*{box-sizing:border-box}
-
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-
-body{
-  margin:0;
-  background:var(--ink);
-  color:var(--text);
-  font-family:var(--serif);
-  font-size:19px;
-  line-height:1.65;
-  -webkit-font-smoothing:antialiased;
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--chalk);font-family:var(--body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 26px}
+a{color:inherit}
+.topbar{border-bottom:1px solid var(--border);background:rgba(8,11,18,.93);backdrop-filter:blur(10px);position:sticky;top:0;z-index:20}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
+.logo{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:-.3px}
+.logo em{font-style:normal;color:var(--edge)}
+.topbar nav{display:flex;gap:22px;font-size:14px;color:var(--mute)}
+.topbar nav a{text-decoration:none}
+.topbar nav a:hover{color:var(--chalk)}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:2.4px;text-transform:uppercase;color:var(--mute2);margin-bottom:16px}
+.block{padding:86px 0;border-bottom:1px solid var(--border)}
+h1{font-family:var(--disp);font-size:clamp(38px,6vw,68px);line-height:1.04;font-weight:700;letter-spacing:-2px;margin-bottom:24px}
+h1 em{font-style:normal;color:var(--edge)}
+h2{font-family:var(--disp);font-size:clamp(24px,3.3vw,35px);line-height:1.2;font-weight:600;letter-spacing:-.9px;margin-bottom:20px;max-width:24ch}
+h3{font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:-.2px;margin-bottom:7px}
+.lede{color:var(--mute);font-size:18.5px;max-width:70ch}
+p{color:var(--mute)}
+p+p{margin-top:15px}
+.btns{display:flex;gap:13px;flex-wrap:wrap;margin-top:34px}
+.cta{font-family:var(--disp);font-weight:600;font-size:15px;text-decoration:none;padding:14px 30px;border-radius:3px;background:var(--edge);color:#04120F;border:1px solid var(--edge)}
+.cta:hover{background:#1ad9c6;border-color:#1ad9c6}
+.cta.ghost{background:transparent;color:var(--chalk);border-color:var(--border-lt)}
+.cta.ghost:hover{border-color:var(--edge);color:var(--edge)}
+.verify-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));border:1px solid var(--border-lt);background:var(--panel2);border-radius:4px;margin:36px 0 8px}
+.verify-strip div{padding:19px 22px;border-left:1px solid var(--border)}
+.verify-strip div:first-child{border-left:0}
+.verify-strip .k{font-family:var(--mono);font-size:10.5px;letter-spacing:1.7px;text-transform:uppercase;color:var(--mute2);margin-bottom:8px}
+.verify-strip .v{font-family:var(--mono);font-size:23px;font-weight:500;letter-spacing:-.6px;line-height:1}
+.verify-strip .v.pos{color:var(--edge)}
+.spec-list{margin-top:36px;border-top:1px solid var(--border-lt)}
+.spec-row{display:grid;grid-template-columns:minmax(190px,1fr) 2.1fr;gap:30px;padding:22px 0;border-bottom:1px solid var(--border)}
+.spec-row p{font-size:15.5px;margin:0}
+.shot{margin-top:42px}
+.shead{display:flex;align-items:baseline;gap:13px;padding-bottom:10px;border-bottom:1px solid var(--border-lt);margin-bottom:16px}
+.shead .tk{font-family:var(--mono);font-size:11.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--edge)}
+.shead .stname{font-family:var(--disp);font-size:16.5px;font-weight:600}
+.shot img{width:100%;display:block;border:1px solid var(--border);border-radius:4px}
+.cap{color:var(--mute);font-size:15px;margin-top:14px;max-width:80ch}
+.table-wrap{overflow-x:auto;margin-top:30px}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:520px}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mute2);text-align:left;padding:0 14px 11px 0;border-bottom:1px solid var(--border-lt);font-weight:500}
+td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);color:var(--mute)}
+td:first-child{color:var(--chalk)}
+td:last-child{font-family:var(--mono);font-size:14px;color:var(--edge);text-align:right;padding-right:0;white-space:nowrap}
+.table-note{font-size:14px;color:var(--mute2);margin-top:16px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px;margin-top:38px}
+.plan{border:1px solid var(--border-lt);background:var(--panel2);border-radius:5px;padding:30px}
+.plan.lead{border-color:var(--edge-dim);box-shadow:0 0 0 1px var(--edge-glow)}
+.plan-name{font-family:var(--disp);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--edge);margin-bottom:14px}
+.plan-price{font-family:var(--disp);font-size:40px;font-weight:700;letter-spacing:-1.6px;color:var(--chalk);line-height:1}
+.plan-sub{font-size:14px;color:var(--mute2);margin:10px 0 22px}
+.plan ul{list-style:none;font-size:15px;color:var(--mute)}
+.plan li{padding:8px 0 8px 22px;position:relative;border-top:1px solid var(--border)}
+.plan li:before{content:"";position:absolute;left:0;top:16px;width:7px;height:7px;background:var(--edge);border-radius:50%}
+.faq-item{border-top:1px solid var(--border);padding:24px 0}
+.faq-item:last-child{border-bottom:1px solid var(--border)}
+.faq-item p{font-size:15.5px;margin-top:8px}
+pre{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:24px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:var(--chalk);margin-top:28px}
+.disclaimer{border-left:2px solid var(--risk);background:var(--panel2);padding:22px 24px;border-radius:0 4px 4px 0;font-size:14.5px;color:var(--mute);max-width:88ch}
+.disclaimer b{color:var(--chalk)}
+footer{padding:52px 0 70px}
+.foot{margin-top:24px;font-size:13.5px;color:var(--mute2)}
+a:focus-visible,.cta:focus-visible{outline:2px solid var(--edge);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:640px){
+  .block{padding:58px 0}
+  .verify-strip div{border-left:0;border-top:1px solid var(--border)}
+  .verify-strip div:first-child{border-top:0}
+  .spec-row{grid-template-columns:1fr;gap:6px}
 }
+.viz{margin-top:34px;border:1px solid var(--border);background:var(--panel2);border-radius:5px;padding:24px 24px 20px}
+.vizhead{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.viztitle{font-family:var(--disp);font-size:15.5px;font-weight:600;color:var(--chalk)}
+.vizmeta{font-family:var(--mono);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mute2)}
+.viz svg{width:100%;height:auto;display:block}
+.viznote{font-size:13.5px;color:var(--mute2);margin-top:14px}
+.params{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:5px;overflow:hidden;margin-top:30px}
+.params div{background:var(--panel2);padding:15px 17px}
+.params .pk{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mute2);margin-bottom:7px}
+.params .pv{font-family:var(--mono);font-size:19px;font-weight:500;color:var(--chalk);letter-spacing:-.4px;line-height:1.1}
+.params .pv.pos{color:var(--edge)}
+.params .pv.neg{color:var(--risk)}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:8px;margin-top:26px}
+.chk{display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:10px 12px;font-size:13px;color:var(--mute)}
+.chk i{width:7px;height:7px;border-radius:50%;background:var(--edge);flex:none}
+.wf{margin-top:28px;border-top:1px solid var(--border-lt)}
+.wfrow{display:grid;grid-template-columns:26px 1fr auto;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}
+.wfrow .n{font-family:var(--mono);font-size:11px;color:var(--mute2)}
+.wfrow .s{font-size:15px;color:var(--chalk)}
+.wfrow .st{font-family:var(--mono);font-size:11px;letter-spacing:1.3px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.wfrow .st i{width:8px;height:8px;border-radius:50%;flex:none}
+.st.ok{color:var(--edge)} .st.ok i{background:var(--edge)}
+.st.fell{color:var(--risk)} .st.fell i{background:var(--risk)}
+.st.idle{color:var(--mute2)} .st.idle i{background:var(--mute2)}
 
-.page{max-width:760px;margin:0 auto;padding:0 24px}
-
-a{color:var(--accent)}
-a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-
-/* ---------- hero ---------- */
-
-header.masthead{padding:72px 0 0}
-
-.wordmark{
-  font-family:var(--mono);
-  font-size:13px;
-  letter-spacing:.14em;
-  color:var(--accent);
-  margin:0 0 40px;
-}
-
-h1{
-  font-family:var(--serif);
-  font-weight:600;
-  font-size:clamp(2.1rem,5.5vw,3.1rem);
-  line-height:1.15;
-  letter-spacing:-.02em;
-  margin:0 0 20px;
-  color:#F8FAFC;
-  max-width:16ch;
-}
-
-.standfirst{
-  font-size:1.12rem;
-  color:var(--muted);
-  margin:0 0 40px;
-  max-width:60ch;
-}
-
-/* ---------- specimen: real terminal output ---------- */
-
-.specimen{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-left:3px solid var(--accent);
-  border-radius:4px;
-  padding:20px 22px;
-  font-family:var(--mono);
-  font-size:12.5px;
-  line-height:1.9;
-  color:var(--muted);
-  overflow-x:auto;
-  white-space:nowrap;
-}
-.specimen b{color:var(--accent);font-weight:600}
-.specimen .lbl{color:var(--dim)}
-.specimen-note{
-  font-size:.82rem;
-  color:var(--dim);
-  margin:12px 0 0;
-  white-space:normal;
-}
-
-/* ---------- buttons ---------- */
-
-.actions{display:flex;flex-wrap:wrap;gap:12px;margin:36px 0 0}
-
-.btn{
-  display:inline-block;
-  font-family:var(--mono);
-  font-size:13px;
-  font-weight:600;
-  letter-spacing:.02em;
-  padding:13px 24px;
-  border-radius:4px;
-  text-decoration:none;
-  border:1px solid var(--accent);
-  color:var(--accent);
-  background:transparent;
-}
-.btn:hover{background:#082F49}
-.btn-solid{background:var(--accent);color:#04121F;border-color:var(--accent)}
-.btn-solid:hover{background:#7DD3FC;border-color:#7DD3FC}
-.btn-quiet{border-color:var(--rule);color:var(--muted)}
-.btn-quiet:hover{background:var(--panel)}
-
-/* ---------- sections ---------- */
-
-section{padding:64px 0 0}
-
-h2{
-  font-family:var(--serif);
-  font-weight:600;
-  font-size:1.55rem;
-  letter-spacing:-.01em;
-  color:#F8FAFC;
-  margin:0 0 8px;
-  padding-top:56px;
-  border-top:1px solid var(--line);
-}
-
-h3{
-  font-family:var(--mono);
-  font-size:12px;
-  font-weight:600;
-  letter-spacing:.12em;
-  color:var(--accent);
-  margin:36px 0 10px;
-}
-
-p{max-width:66ch}
-
-.lede{color:var(--muted);margin:0 0 4px;max-width:64ch}
-
-ul{padding-left:0;list-style:none;margin:0;max-width:66ch}
-li{
-  padding:10px 0 10px 20px;
-  border-bottom:1px solid var(--line);
-  position:relative;
-  font-size:1rem;
-}
-li:before{
-  content:"";
-  position:absolute;
-  left:0;top:22px;
-  width:7px;height:1px;
-  background:var(--rule);
-}
-li b{color:#F8FAFC;font-weight:600}
-li code{font-family:var(--mono);font-size:.86em;color:var(--accent)}
-
-/* ---------- screenshot slot ---------- */
-
-figure{margin:28px 0 0}
-figure img{width:100%;display:block;border:1px solid var(--line);border-radius:4px}
-figcaption{font-size:.85rem;color:var(--dim);margin-top:10px}
-
-.shot-placeholder{
-  border:1px dashed var(--rule);
-  border-radius:4px;
-  padding:56px 24px;
-  text-align:center;
-  font-family:var(--mono);
-  font-size:12px;
-  color:var(--dim);
-  line-height:1.8;
-}
-
-/* ---------- data source table ---------- */
-
-table{width:100%;border-collapse:collapse;margin-top:22px;font-size:.95rem}
-th,td{text-align:left;padding:11px 12px 11px 0;border-bottom:1px solid var(--line);vertical-align:top}
-th{
-  font-family:var(--mono);
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:.1em;
-  color:var(--dim);
-}
-td:first-child{font-family:var(--mono);font-size:.84rem;color:#F8FAFC;white-space:nowrap;padding-right:24px}
-
-/* ---------- pricing ---------- */
-
-.tiers{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}
-@media (max-width:640px){.tiers{grid-template-columns:1fr}}
-
-.tier{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:24px 22px}
-.tier.featured{border-color:var(--accent)}
-
-.tier h4{
-  font-family:var(--mono);
-  font-size:12px;
-  font-weight:600;
-  letter-spacing:.12em;
-  color:var(--accent);
-  margin:0 0 14px;
-}
-.price{font-size:2.1rem;font-weight:600;color:#F8FAFC;line-height:1.1}
-.price span{font-size:.95rem;color:var(--muted);font-weight:400}
-.was{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin:6px 0 18px}
-.was s{text-decoration:line-through}
-.tier ul{margin:0 0 22px}
-.tier li{font-size:.93rem;padding:8px 0 8px 20px}
-.tier li:last-child{border-bottom:none}
-.tier li:before{top:19px}
-.tier .btn{width:100%;text-align:center}
-
-/* ---------- disclosure ---------- */
-
-.disclosure{
-  margin:64px 0 0;
-  padding:20px 22px;
-  background:var(--panel);
-  border-left:4px solid var(--warn);
-  border-radius:4px;
-  font-size:.86rem;
-  line-height:1.75;
-  color:var(--muted);
-}
-.disclosure strong{color:#F8FAFC}
-.disclosure p{max-width:none;margin:0 0 12px}
-.disclosure p:last-child{margin:0}
-
-footer{
-  padding:40px 0 72px;
-  margin-top:32px;
-  border-top:1px solid var(--line);
-  font-family:var(--mono);
-  font-size:11.5px;
-  color:var(--dim);
-  display:flex;
-  justify-content:space-between;
-  flex-wrap:wrap;
-  gap:12px;
-}
-footer a{color:var(--muted);text-decoration:none}
-footer a:hover{color:var(--accent)}
 </style>
+<!-- ANALYTICS - paste your Cloudflare Web Analytics snippet here (cookieless; no consent banner needed in most jurisdictions):
+     <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"YOUR_TOKEN"}'></script> -->
 </head>
 <body>
+<header class="topbar"><div class="wrap">
+  <div class="logo">VRP <em>Quant</em></div>
+  <nav><a href="#description">Description</a><a href="#output">Live output</a><a href="#verification">Verification</a><a href="#access">Access</a><a href="#contact">Contact</a><a href="https://vrpquant.streamlit.app">Log in</a></nav>
+</div></header>
+<main>
 
-<div class="page">
-
-<header class="masthead">
-  <p class="wordmark">VRP QUANT</p>
-
-  <h1>Price the trade before you put it on.</h1>
-
-  <p class="standfirst">A research terminal for options premium sellers. It prices any structure three
-  independent ways, simulates where the underlying can actually land, and shows what the strategy would
-  have done out of sample — on liquid US equities, ETFs and major crypto.</p>
-
-  <div class="specimen" aria-label="Example of terminal output">
-    <span class="lbl">$</span><b>247.31</b> <span class="lbl">via</span> alphavantage:quote
-    <span class="lbl">|</span> IV: 34.2% <span class="lbl">|</span> r: 4.312% <span class="lbl">[FRED:DGS3MO]</span><br>
-    <span class="lbl">CRR European</span> <b>$4.1827</b>
-    <span class="lbl">CRR American</span> <b>$4.2015</b>
-    <span class="lbl">Early-ex premium</span> <b>$0.0188</b><br>
-    <span class="lbl">Black-Scholes</span> <b>$4.1819</b>
-    <span class="lbl">Euro vs BS error</span> <b>0.019%</b>
-    <span class="lbl">MC POP net of premium</span> <b>71.4%</b>
-  </div>
-  <p class="specimen-note">Every quote is stamped with the source it came from. Values shown are illustrative.</p>
-
-  <div class="actions">
-    <a class="btn btn-solid" href="#pricing">See pricing</a>
-    <a class="btn btn-quiet" href="https://vrpquant.streamlit.app">Open the terminal</a>
-  </div>
-</header>
-
-<section id="what">
-  <h2>What it computes</h2>
-  <p class="lede">Three pricing methods run on the same inputs, so disagreement between them is
-  information rather than something hidden behind a single number.</p>
-
-  <h3>PRICING</h3>
-  <ul>
-    <li><b>Black-Scholes</b> with all five Greeks — delta, gamma, theta, vega, rho — and a continuous
-    dividend yield applied once, in the right place.</li>
-    <li><b>200-step Cox-Ross-Rubinstein binomial tree</b>, European and American exercise computed in
-    parallel, so the early-exercise premium is reported as its own number instead of being buried in
-    the price.</li>
-    <li><b>Monte Carlo, 10,000 to 100,000 paths</b>, with Merton jump-diffusion and a drift compensator
-    that keeps the simulation risk-neutral.</li>
-    <li><b>Newton-Raphson implied volatility solver</b> for backing IV out of a market price.</li>
-  </ul>
-
-  <h3>PROBABILITY</h3>
-  <p>Probability of profit is computed from the seller's profit and loss, net of premium received — not
-  <code>P(ITM)</code>. A short put that finishes slightly in the money is often still a winner, and the
-  number here reflects that. Breakeven, expected P&amp;L and the full terminal distribution are shown
-  alongside it.</p>
-
-  <h3>SIGNAL AND VALIDATION</h3>
-  <ul>
-    <li><b>GARCH(1,1)</b> conditional volatility with a Kalman trend filter, fitted causally — no
-    information from the future leaks into any historical bar.</li>
-    <li><b>Anchored walk-forward optimisation.</b> Parameters are chosen on a training window and
-    evaluated only on the window that follows it. Slippage and commission are modelled.</li>
-    <li><b>Half-Kelly sizing</b>, volatility targeting and mean-variance weights for position sizing.</li>
-    <li><b>Variance risk premium</b> measured per name as implied minus realised volatility, scaled to
-    that name's own volatility regime.</li>
-  </ul>
-
-  <figure>
-    <!--
-      SCREENSHOT SLOT
-      ---------------
-      1. Run a Deep Dive in the terminal on a liquid name (SPY, AAPL, TSLA).
-      2. Screenshot the results and save the file as  screenshot.png
-      3. Upload screenshot.png to this repo (Add file > Upload files).
-      4. Delete the <div class="shot-placeholder"> block below, then remove
-         the comment markers around the <img> line beneath it.
-    -->
-    <div class="shot-placeholder">
-      screenshot.png not yet added<br>
-      see the comment in this page's source for how to drop it in
+<section class="block">
+  <div class="wrap">
+    <div class="eyebrow">Product Dossier &nbsp;·&nbsp; v30.5.4</div>
+    <h1>Verified math.<br><em>Not asserted.</em></h1>
+    <p class="lede">Every build of the VRP Quant terminal runs a deterministic proof suite in
+    public continuous integration. The report it produces is published on this site, stamped with
+    the commit hash you can read in the terminal sidebar. If the mathematics breaks, the build
+    goes red and it does not ship.</p>
+    <div class="verify-strip">
+      <div><div class="k">Verification</div><div class="v pos">Pass</div></div>
+      <div><div class="k">Checks</div><div class="v">22 / 22</div></div>
+      <div><div class="k">Version</div><div class="v">v30.5.4</div></div>
+      <div><div class="k">Report</div><div class="v">published</div></div>
     </div>
-    <!-- <img src="screenshot.png" alt="Deep Dive output showing Greeks, pricing convergence and the Monte Carlo terminal distribution"> -->
-    <figcaption>Deep Dive output for a single name.</figcaption>
-  </figure>
-</section>
-
-<section id="data">
-  <h2>Where the numbers come from</h2>
-  <p class="lede">Market data moves through a waterfall. If a source fails or is throttled the next one
-  takes over, and the terminal shows you on screen which one answered.</p>
-
-  <table>
-    <thead>
-      <tr><th>Source</th><th>Used for</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Alpha Vantage</td><td>Primary quotes and daily history</td></tr>
-      <tr><td>Google Finance</td><td>Real-time quote fallback</td></tr>
-      <tr><td>Polygon.io</td><td>Delayed NBBO snapshots and aggregates</td></tr>
-      <tr><td>yfinance</td><td>End-of-day backstop</td></tr>
-      <tr><td>FRED&nbsp;DGS3MO</td><td>Risk-free rate, taken from the Federal Reserve's published Treasury
-      constant-maturity series rather than a traded proxy ticker</td></tr>
-      <tr><td>NewsAPI</td><td>Per-ticker headlines</td></tr>
-    </tbody>
-  </table>
-</section>
-
-<section id="pricing">
-  <h2>Pricing</h2>
-  <p class="lede">Founding member rates. Month to month, cancel in PayPal at any time.</p>
-
-  <div class="tiers">
-    <div class="tier">
-      <h4>ANALYST</h4>
-      <div class="price">$119<span> / month</span></div>
-      <p class="was">Retail <s>$299</s></p>
-      <ul>
-        <li>Full Deep Dive on any ticker</li>
-        <li>All five Greeks, CRR tree, Monte Carlo</li>
-        <li>Walk-forward backtest and Half-Kelly sizing</li>
-        <li>Expected move cone and per-ticker news</li>
-      </ul>
-      <a class="btn" href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-4U294837R2974722VNJM2NSQ">Subscribe</a>
-    </div>
-
-    <div class="tier featured">
-      <h4>APEX ULTIMATE</h4>
-      <div class="price">$199<span> / month</span></div>
-      <p class="was">Retail <s>$399</s></p>
-      <ul>
-        <li>Everything in Analyst</li>
-        <li>Market Scanner across 12 sector universes</li>
-        <li>APEX-100 high-liquidity universe</li>
-        <li>Configurable Monte Carlo path count</li>
-      </ul>
-      <a class="btn btn-solid" href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-0VW55098V70850835NJM2PDQ">Subscribe</a>
+    <div class="btns">
+      <a class="cta" href="https://vrpquant.streamlit.app">Open the terminal</a>
+      <a class="cta ghost" href="audit.html">Read the verification report</a>
     </div>
   </div>
 </section>
 
-<section id="fit">
-  <h2>Who this is not for</h2>
-  <p>It is not a signal service and it does not tell you what to buy. It assumes you already understand
-  options mechanics and want better numbers underneath decisions you are making yourself. If you are
-  looking for alerts to follow, or you have never sold a spread, this is the wrong tool and you will not
-  get value from it.</p>
-  <p>It is also not a broker. Nothing executes here. You take what the terminal gives you and place the
-  trade yourself, wherever you trade.</p>
+<section class="block" id="description">
+  <div class="wrap">
+    <div class="eyebrow">Product Description</div>
+    <h2>A variance risk premium research terminal that shows its working.</h2>
+    <p class="lede">Two modules. The Scanner ranks a universe on volatility-regime and
+    premium-richness criteria. Deep Dive takes one name and prices a structure three independent
+    ways, then shows you how far the three disagree.</p>
+    <p class="lede">What it does not do is hand you a trade and hide the derivation. Every strike
+    is traceable to a stated basis, every volatility figure to a stated estimator, every price to
+    a stated model, and every data point to the source that actually served it.</p>
+  </div>
 </section>
 
-<div class="disclosure">
-  <p><strong>Risk disclosure.</strong> VRP Quant is a quantitative research tool. It is not a registered
-  investment advisor, broker-dealer, or financial planner. All outputs, including Monte Carlo simulations
-  and HQTA Directives, are for informational and educational purposes only. Options trading carries a
-  substantial risk of total capital loss and is not suitable for all investors. Verify all data
-  independently and consult a licensed professional before deploying capital.</p>
-  <p><strong>Hypothetical performance.</strong> Backtested results shown in the terminal are hypothetical,
-  were not achieved with real capital, and have inherent limitations. They do not reflect the effect of
-  material economic and market factors on decision-making in live trading. Past performance is not
-  indicative of future results.</p>
+<section class="block">
+  <div class="wrap">
+    <div class="eyebrow">Architecture</div>
+    <h2>Every ticker runs the same pipeline. No shortcuts, no exceptions.</h2>
+    <div class="spec-list">
+      <div class="spec-row"><h3>Six-source data waterfall</h3>
+        <p>Alpha Vantage, Google Finance, Polygon, yfinance, FRED and NewsAPI, each with
+        per-request health reporting. Source indicators reflect the outcome of the actual request,
+        never merely that a key is configured. A throttled reply that arrives dressed as a success
+        is caught and marked as a fallthrough.</p></div>
+      <div class="spec-row"><h3>Gap-aware volatility</h3>
+        <p>Yang-Zhang realised volatility over a fixed window, so overnight gaps are measured
+        instead of ignored. Close-to-close estimators treat a gap as though it never happened,
+        which is exactly backwards for anyone short premium.</p></div>
+      <div class="spec-row"><h3>Three independent pricing paths</h3>
+        <p>Black-Scholes closed form, a 200-step Cox-Ross-Rubinstein lattice covering European and
+        American exercise, and Monte Carlo across five to fifty thousand paths with optional Merton
+        jump diffusion. The lattice reports its own error against the closed-form price on screen.</p></div>
+      <div class="spec-row"><h3>Strike selection you control</h3>
+        <p>Delta-selected strikes solve numerically for the strike carrying that delta. Sigma bands
+        are drift-corrected lognormal quantiles. They are related and not equal, and the terminal
+        keeps them as separate choices rather than quietly conflating them.</p></div>
+      <div class="spec-row"><h3>Live discount rate</h3>
+        <p>Discounting uses the current three-month Treasury yield pulled from FRED and dated on
+        screen, not a hardcoded constant left over from whenever the file was written.</p></div>
+      <div class="spec-row"><h3>Build traceability</h3>
+        <p>The terminal displays its version in the sidebar and the report names the version it
+        certifies. Where the two agree, the software in front of you is the software that was
+        proven. The commit hash lives on the report, where an auditor needs it, rather than
+        cluttering a screen you look at every day.</p></div>
+    </div>
+    <div class="viz"><div class="vizhead"><span class="viztitle">Source health, as captured</span><span class="vizmeta">one scan · build 340c667</span></div><div class="wf"><div class="wfrow"><span class="n">01</span><span class="s">Alpha Vantage · quote</span><span class="st ok"><i></i>served</span></div><div class="wfrow"><span class="n">02</span><span class="s">Alpha Vantage · history</span><span class="st fell"><i></i>fell through</span></div><div class="wfrow"><span class="n">03</span><span class="s">Google Finance · quote</span><span class="st idle"><i></i>not needed</span></div><div class="wfrow"><span class="n">04</span><span class="s">Polygon · quote</span><span class="st idle"><i></i>not needed</span></div><div class="wfrow"><span class="n">05</span><span class="s">Polygon · history</span><span class="st ok"><i></i>served</span></div><div class="wfrow"><span class="n">06</span><span class="s">yfinance · history</span><span class="st ok"><i></i>served</span></div></div><div class="viznote">Amber on rung 02 is the free-tier limit being hit and the waterfall moving down to Polygon. The terminal reports the outcome of the request, not whether a key is configured — a throttled reply arrives as a success and is caught rather than trusted.</div></div>
+  </div>
+</section>
+
+<section class="block" id="output">
+  <div class="wrap">
+    <div class="eyebrow">Live Output &nbsp;·&nbsp; build 340c667</div>
+    <h2>Unedited captures from the running terminal.</h2>
+    <p class="lede">These are screenshots of the deployed application, not illustrations of it.</p>
+
+    <div class="viz"><div class="vizhead"><span class="viztitle">One scan session, ranked by premium richness</span><span class="vizmeta">custom watchlist · 4 of 4 returned</span></div><svg viewBox="0 0 740 236" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VRP edge and annualised volatility for four names from a single scan session."><text x="58" y="38" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--chalk)">AMD</text><rect x="70" y="22" width="409" height="18" fill="var(--edge)" rx="2"/><text x="489" y="36" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">+26.6% edge</text><rect x="70" y="44" width="395" height="10" fill="var(--mute2)" rx="2" opacity=".7"/><text x="475" y="53" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">73.4% vol</text><text x="58" y="90" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--chalk)">META</text><rect x="70" y="74" width="175" height="18" fill="var(--edge)" rx="2"/><text x="255" y="88" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">+11.4% edge</text><rect x="70" y="96" width="263" height="10" fill="var(--mute2)" rx="2" opacity=".7"/><text x="343" y="105" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">49.0% vol</text><text x="58" y="142" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--chalk)">TSLA</text><rect x="70" y="126" width="118" height="18" fill="var(--edge)" rx="2"/><text x="198" y="140" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">+7.7% edge</text><rect x="70" y="148" width="246" height="10" fill="var(--mute2)" rx="2" opacity=".7"/><text x="326" y="157" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">45.8% vol</text><text x="58" y="194" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--chalk)">NVDA</text><rect x="70" y="178" width="34" height="18" fill="var(--edge)" rx="2"/><text x="114" y="192" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">+2.2% edge</text><rect x="70" y="200" width="203" height="10" fill="var(--mute2)" rx="2" opacity=".7"/><text x="283" y="209" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">37.8% vol</text></svg><div class="viznote">Scanner VRP edge is a proxy — VIX scaled to each name's own volatility regime, not its traded implied volatility. The terminal labels it as a proxy in the table footnote and sends you to Deep Dive for the measured figure. A richer proxy on a higher-volatility name is not automatically a better trade.</div></div>
+
+    <figure class="shot">
+      <div class="shead"><span class="tk">Plate 01</span><span class="stname">Institutional Market Scanner</span></div>
+      <img src="img/scanner.png" alt="Market scanner output: a ranked table of four tickers showing alpha score, trend, VRP edge, volatility, expected move, volatility-target weight, and fifty-day support and resistance.">
+      <figcaption class="cap">Screen a sector, the APEX-100 or your own watchlist. Each name returns
+      an alpha score, trend classification, VRP edge, annualised volatility, thirty-day expected
+      move, volatility-target weight, and fifty-day support and resistance. The sidebar shows which
+      source served each request. The footnote under the table marks the scanner's VRP figure as a
+      proxy rather than a measurement, because that is what it is.</figcaption>
+    </figure>
+
+    <div class="viz"><div class="vizhead"><span class="viztitle">Expected move cone, TSLA 30 DTE</span><span class="vizmeta">σ 45.8% · drift-corrected lognormal</span></div><svg viewBox="0 0 740 286" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Expected move cone for TSLA over thirty days showing one and two sigma bands widening with the square root of time."><polygon points="64.0,142.5 79.0,128.8 94.0,122.9 109.0,118.4 124.0,114.5 139.0,111.1 154.0,107.9 169.0,105.1 184.0,102.3 199.0,99.8 214.0,97.3 229.0,95.0 244.0,92.8 259.0,90.6 274.0,88.5 289.0,86.5 304.0,84.5 319.0,82.6 334.0,80.7 349.0,78.9 364.0,77.1 379.0,75.4 394.0,73.7 409.0,72.0 424.0,70.3 439.0,68.7 454.0,67.1 469.0,65.6 484.0,64.0 499.0,62.5 514.0,61.0 529.0,59.5 544.0,58.1 559.0,56.6 574.0,55.2 589.0,53.8 604.0,52.4 619.0,51.0 634.0,49.7 649.0,48.3 664.0,47.0 664.0,219.0 649.0,218.2 634.0,217.3 619.0,216.4 604.0,215.5 589.0,214.6 574.0,213.7 559.0,212.7 544.0,211.8 529.0,210.8 514.0,209.8 499.0,208.8 484.0,207.7 469.0,206.6 454.0,205.6 439.0,204.4 424.0,203.3 409.0,202.1 394.0,200.9 379.0,199.7 364.0,198.4 349.0,197.1 334.0,195.8 319.0,194.4 304.0,192.9 289.0,191.4 274.0,189.9 259.0,188.3 244.0,186.6 229.0,184.8 214.0,183.0 199.0,181.0 184.0,178.9 169.0,176.7 154.0,174.2 139.0,171.6 124.0,168.6 109.0,165.2 94.0,161.2 79.0,155.8 64.0,142.5" fill="var(--edge)" opacity=".08"/><polygon points="64.0,142.5 79.0,135.7 94.0,132.9 109.0,130.7 124.0,128.9 139.0,127.3 154.0,125.8 169.0,124.5 184.0,123.2 199.0,122.0 214.0,120.9 229.0,119.8 244.0,118.8 259.0,117.8 274.0,116.9 289.0,116.0 304.0,115.1 319.0,114.2 334.0,113.4 349.0,112.6 364.0,111.8 379.0,111.0 394.0,110.3 409.0,109.5 424.0,108.8 439.0,108.1 454.0,107.4 469.0,106.7 484.0,106.1 499.0,105.4 514.0,104.8 529.0,104.1 544.0,103.5 559.0,102.9 574.0,102.3 589.0,101.7 604.0,101.1 619.0,100.5 634.0,99.9 649.0,99.4 664.0,98.8 664.0,184.1 649.0,183.6 634.0,183.1 619.0,182.6 604.0,182.0 589.0,181.5 574.0,180.9 559.0,180.4 544.0,179.8 529.0,179.3 514.0,178.7 499.0,178.1 484.0,177.5 469.0,176.9 454.0,176.2 439.0,175.6 424.0,174.9 409.0,174.3 394.0,173.6 379.0,172.9 364.0,172.2 349.0,171.4 334.0,170.7 319.0,169.9 304.0,169.1 289.0,168.3 274.0,167.4 259.0,166.5 244.0,165.6 229.0,164.6 214.0,163.6 199.0,162.5 184.0,161.4 169.0,160.2 154.0,158.9 139.0,157.5 124.0,155.9 109.0,154.1 94.0,152.0 79.0,149.2 64.0,142.5" fill="var(--edge)" opacity=".16"/><polyline points="64.0,142.5 79.0,128.8 94.0,122.9 109.0,118.4 124.0,114.5 139.0,111.1 154.0,107.9 169.0,105.1 184.0,102.3 199.0,99.8 214.0,97.3 229.0,95.0 244.0,92.8 259.0,90.6 274.0,88.5 289.0,86.5 304.0,84.5 319.0,82.6 334.0,80.7 349.0,78.9 364.0,77.1 379.0,75.4 394.0,73.7 409.0,72.0 424.0,70.3 439.0,68.7 454.0,67.1 469.0,65.6 484.0,64.0 499.0,62.5 514.0,61.0 529.0,59.5 544.0,58.1 559.0,56.6 574.0,55.2 589.0,53.8 604.0,52.4 619.0,51.0 634.0,49.7 649.0,48.3 664.0,47.0" fill="none" stroke="var(--mute2)" stroke-width="1.4"/><polyline points="64.0,142.5 79.0,155.8 94.0,161.2 109.0,165.2 124.0,168.6 139.0,171.6 154.0,174.2 169.0,176.7 184.0,178.9 199.0,181.0 214.0,183.0 229.0,184.8 244.0,186.6 259.0,188.3 274.0,189.9 289.0,191.4 304.0,192.9 319.0,194.4 334.0,195.8 349.0,197.1 364.0,198.4 379.0,199.7 394.0,200.9 409.0,202.1 424.0,203.3 439.0,204.4 454.0,205.6 469.0,206.6 484.0,207.7 499.0,208.8 514.0,209.8 529.0,210.8 544.0,211.8 559.0,212.7 574.0,213.7 589.0,214.6 604.0,215.5 619.0,216.4 634.0,217.3 649.0,218.2 664.0,219.0" fill="none" stroke="var(--mute2)" stroke-width="1.4"/><polyline points="64.0,142.5 79.0,135.7 94.0,132.9 109.0,130.7 124.0,128.9 139.0,127.3 154.0,125.8 169.0,124.5 184.0,123.2 199.0,122.0 214.0,120.9 229.0,119.8 244.0,118.8 259.0,117.8 274.0,116.9 289.0,116.0 304.0,115.1 319.0,114.2 334.0,113.4 349.0,112.6 364.0,111.8 379.0,111.0 394.0,110.3 409.0,109.5 424.0,108.8 439.0,108.1 454.0,107.4 469.0,106.7 484.0,106.1 499.0,105.4 514.0,104.8 529.0,104.1 544.0,103.5 559.0,102.9 574.0,102.3 589.0,101.7 604.0,101.1 619.0,100.5 634.0,99.9 649.0,99.4 664.0,98.8" fill="none" stroke="var(--edge)" stroke-width="1.4"/><polyline points="64.0,142.5 79.0,149.2 94.0,152.0 109.0,154.1 124.0,155.9 139.0,157.5 154.0,158.9 169.0,160.2 184.0,161.4 199.0,162.5 214.0,163.6 229.0,164.6 244.0,165.6 259.0,166.5 274.0,167.4 289.0,168.3 304.0,169.1 319.0,169.9 334.0,170.7 349.0,171.4 364.0,172.2 379.0,172.9 394.0,173.6 409.0,174.3 424.0,174.9 439.0,175.6 454.0,176.2 469.0,176.9 484.0,177.5 499.0,178.1 514.0,178.7 529.0,179.3 544.0,179.8 559.0,180.4 574.0,180.9 589.0,181.5 604.0,182.0 619.0,182.6 634.0,183.1 649.0,183.6 664.0,184.1" fill="none" stroke="var(--edge)" stroke-width="1.4"/><line x1="64" y1="142.5" x2="664" y2="142.5" stroke="var(--chalk)" stroke-width="1" stroke-dasharray="4 4" opacity=".5"/><line x1="64" y1="36" x2="64" y2="232" stroke="var(--border-lt)" stroke-width="1"/><line x1="64" y1="232" x2="664" y2="232" stroke="var(--border-lt)" stroke-width="1"/><text x="672" y="51.0" font-family="IBM Plex Mono,monospace" font-size="11.5" fill="var(--mute2)">+2σ  472.66</text><text x="672" y="102.8" font-family="IBM Plex Mono,monospace" font-size="11.5" fill="var(--edge)">+1σ  414.50</text><text x="672" y="146.5" font-family="IBM Plex Mono,monospace" font-size="11.5" fill="var(--chalk)">spot 365.44</text><text x="672" y="188.1" font-family="IBM Plex Mono,monospace" font-size="11.5" fill="var(--edge)">−1σ  318.77</text><text x="672" y="223.0" font-family="IBM Plex Mono,monospace" font-size="11.5" fill="var(--mute2)">−2σ  279.54</text><text x="64" y="252" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">today</text><text x="364" y="252" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">15d</text><text x="664" y="252" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">30d</text><text x="364" y="274" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">bands widen with √t, not linearly with t</text></svg><div class="viznote">Drift-corrected lognormal quantiles, not the uncorrected S·exp(±σ√T) shortcut. The asymmetry between the upper and lower band is the Ito term doing its work: in log space the bands are symmetric, in price space they are not.</div></div>
+
+    <figure class="shot">
+      <div class="shead"><span class="tk">Plate 02</span><span class="stname">Strike basis selection</span></div>
+      <img src="img/strikebasis.png" alt="Deep Dive strike basis selector offering sixteen-delta and thirty-delta solved strikes, one-sigma and half-sigma bands, at-the-money, and the fifty-day low.">
+      <figcaption class="cap">Six bases, and the distinction between them is real. On a name running
+      forty-five percent volatility, the one-sigma band is closer to a thirteen-delta strike than a
+      sixteen. Software that labels them as the same thing is wrong by three delta points and does
+      not tell you. Whichever basis you pick propagates into every Greek, tree price and simulation
+      below it.</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <div class="shead"><span class="tk">Plate 03</span><span class="stname">Deep Dive &amp; Trade Architect</span></div>
+      <img src="img/deepdive.png" alt="Deep Dive output: sixteen and twenty-five delta selected strikes on both wings, the full Black-Scholes Greek set, and CRR European versus American pricing with early-exercise premium and convergence error.">
+      <figcaption class="cap">Delta-selected strikes on both wings, the full Greek set including rho,
+      and a convergence panel reporting the European tree price, the American price, the
+      early-exercise premium, and the lattice's error against closed form. That error is displayed
+      rather than suppressed. You are watching the model audit itself in real time.</figcaption>
+    </figure>
+    <div class="viz"><div class="vizhead"><span class="viztitle">Monte Carlo terminal distribution</span><span class="vizmeta">50,000 paths · 30 DTE · σ 45.8%</span></div><svg viewBox="0 0 740 276" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Monte Carlo terminal price distribution for TSLA at thirty days with the short put strike marked and the loss region shaded."><rect x="64.0" y="212.0" width="21.7" height="0.0" fill="var(--risk)" opacity=".72"/><rect x="87.1" y="211.8" width="21.7" height="0.2" fill="var(--risk)" opacity=".72"/><rect x="110.2" y="210.8" width="21.7" height="1.2" fill="var(--risk)" opacity=".72"/><rect x="133.2" y="208.0" width="21.7" height="4.0" fill="var(--risk)" opacity=".72"/><rect x="156.3" y="201.0" width="21.7" height="11.0" fill="var(--risk)" opacity=".72"/><rect x="179.4" y="186.7" width="21.7" height="25.3" fill="var(--risk)" opacity=".72"/><rect x="202.5" y="164.5" width="21.7" height="47.5" fill="var(--risk)" opacity=".72"/><rect x="225.5" y="129.3" width="21.7" height="82.7" fill="var(--risk)" opacity=".72"/><rect x="248.6" y="92.2" width="21.7" height="119.8" fill="var(--risk)" opacity=".72"/><rect x="271.7" y="53.9" width="21.7" height="158.1" fill="var(--edge)" opacity=".72"/><rect x="294.8" y="37.7" width="21.7" height="174.3" fill="var(--edge)" opacity=".72"/><rect x="317.8" y="36.0" width="21.7" height="176.0" fill="var(--edge)" opacity=".72"/><rect x="340.9" y="44.9" width="21.7" height="167.1" fill="var(--edge)" opacity=".72"/><rect x="364.0" y="62.4" width="21.7" height="149.6" fill="var(--edge)" opacity=".72"/><rect x="387.1" y="87.2" width="21.7" height="124.8" fill="var(--edge)" opacity=".72"/><rect x="410.2" y="120.5" width="21.7" height="91.5" fill="var(--edge)" opacity=".72"/><rect x="433.2" y="142.7" width="21.7" height="69.3" fill="var(--edge)" opacity=".72"/><rect x="456.3" y="163.8" width="21.7" height="48.2" fill="var(--edge)" opacity=".72"/><rect x="479.4" y="178.9" width="21.7" height="33.1" fill="var(--edge)" opacity=".72"/><rect x="502.5" y="192.1" width="21.7" height="19.9" fill="var(--edge)" opacity=".72"/><rect x="525.5" y="199.4" width="21.7" height="12.6" fill="var(--edge)" opacity=".72"/><rect x="548.6" y="205.7" width="21.7" height="6.3" fill="var(--edge)" opacity=".72"/><rect x="571.7" y="208.1" width="21.7" height="3.9" fill="var(--edge)" opacity=".72"/><rect x="594.8" y="209.1" width="21.7" height="2.9" fill="var(--edge)" opacity=".72"/><rect x="617.8" y="210.7" width="21.7" height="1.3" fill="var(--edge)" opacity=".72"/><rect x="640.9" y="211.3" width="21.7" height="0.7" fill="var(--edge)" opacity=".72"/><line x1="64" y1="212" x2="664" y2="212" stroke="var(--border-lt)" stroke-width="1"/><line x1="277.2" y1="24" x2="277.2" y2="212" stroke="var(--chalk)" stroke-width="1.5"/><text x="269" y="20" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--chalk)">short strike 327.90</text><text x="181" y="52" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="var(--risk)">21.4% of paths</text><text x="181" y="70" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">finish below the strike</text><text x="489" y="52" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="var(--edge)">78.6%</text><text x="489" y="70" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">expire above it</text><text x="64" y="230" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">200</text><text x="197" y="230" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">280</text><text x="331" y="230" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">360</text><text x="464" y="230" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">440</text><text x="597" y="230" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">520</text><text x="364" y="256" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">terminal price · 50,000 simulated paths</text></svg><div class="viznote">The shaded fraction is the modelled probability of finishing in the money — 21.4% here. That is not the same number as the strike's delta, and software that presents them as interchangeable is wrong by several points. Both are shown in the terminal, separately.</div></div>
+    <div class="params">
+  <div><div class="pk">BS price</div><div class="pv">$3.8890</div></div>
+  <div><div class="pk">Delta</div><div class="pv neg">-0.1601</div></div>
+  <div><div class="pk">Gamma</div><div class="pv">0.00557</div></div>
+  <div><div class="pk">Theta / day</div><div class="pv neg">-$0.1703</div></div>
+  <div><div class="pk">Vega / 1%</div><div class="pv">$0.2550</div></div>
+  <div><div class="pk">Rho / 1%</div><div class="pv neg">-$0.0513</div></div>
+  <div><div class="pk">CRR European</div><div class="pv">$3.8887</div></div>
+  <div><div class="pk">CRR American</div><div class="pv">$3.9014</div></div>
+  <div><div class="pk">Early exercise</div><div class="pv pos">$0.0127</div></div>
+  <div><div class="pk">Tree vs BS</div><div class="pv pos">0.008%</div></div>
 </div>
+    <div class="viz"><div class="vizhead"><span class="viztitle">Where the risk actually sits</span><span class="vizmeta">put delta and gamma across strikes</span></div><svg viewBox="0 0 740 268" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Put delta and gamma across strikes at thirty days, gamma peaking near the money while delta runs from zero to minus one."><line x1="64" y1="208" x2="660" y2="208" stroke="var(--border-lt)" stroke-width="1"/><polyline points="64.0,191.2 129.6,163.3 195.1,121.5 260.7,78.8 326.2,52.6 391.8,52.6 457.3,75.1 522.9,108.7 588.4,141.9 654.0,168.1" fill="none" stroke="var(--risk)" stroke-width="2"/><polyline points="64.0,42.9 129.6,49.3 195.1,62.7 260.7,83.8 326.2,110.4 391.8,137.8 457.3,161.8 522.9,180.1 588.4,192.4 654.0,199.9" fill="none" stroke="var(--edge)" stroke-width="2"/><line x1="221.0" y1="30" x2="221.0" y2="208" stroke="var(--chalk)" stroke-width="1" stroke-dasharray="4 4" opacity=".65"/><text x="229" y="42" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--chalk)">short strike</text><text x="70" y="30" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">delta</text><text x="130" y="30" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--risk)">gamma</text><text x="64" y="228" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">280</text><text x="195" y="228" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">320</text><text x="326" y="228" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">360</text><text x="457" y="228" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">400</text><text x="588" y="228" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">440</text><text x="364" y="252" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">strike · spot 365.44 · 30 DTE</text></svg><div class="viznote">Gamma peaks near the money and collapses toward the wings, which is why a short strike far from spot is cheap to hold until it isn't. The dashed line is the 16Δ strike: low delta, and low gamma — until price migrates toward it.</div></div>
+    <div class="viz"><div class="vizhead"><span class="viztitle">Delta-selected strikes, TSLA at 30 DTE</span><span class="vizmeta">spot 365.44 · vol 45.8% · build 340c667</span></div><svg viewBox="0 0 740 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Strike ladder for TSLA at 30 days to expiry showing 16 and 25 delta strikes either side of spot."><line x1="40" y1="108" x2="700" y2="108" stroke="var(--border-lt)" stroke-width="1"/><line x1="370" y1="72" x2="370" y2="144" stroke="var(--chalk)" stroke-width="1.5"/><text x="370" y="62" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--chalk)">spot 365.44</text><line x1="164" y1="88" x2="164" y2="128" stroke="var(--edge)" stroke-width="2"/><circle cx="164" cy="108" r="4" fill="var(--edge)"/><text x="164" y="150" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">327.90</text><text x="164" y="168" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">16Δ put</text><text x="164" y="80" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">-10.3%</text><line x1="234" y1="88" x2="234" y2="128" stroke="var(--edge)" stroke-width="2"/><circle cx="234" cy="108" r="4" fill="var(--edge)"/><text x="234" y="150" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">340.67</text><text x="234" y="168" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">25Δ put</text><text x="234" y="80" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">-6.8%</text><line x1="560" y1="88" x2="560" y2="128" stroke="var(--signal)" stroke-width="2"/><circle cx="560" cy="108" r="4" fill="var(--signal)"/><text x="560" y="150" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--signal)">400.27</text><text x="560" y="168" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">25Δ call</text><text x="560" y="80" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">+9.5%</text><line x1="646" y1="88" x2="646" y2="128" stroke="var(--signal)" stroke-width="2"/><circle cx="646" cy="108" r="4" fill="var(--signal)"/><text x="646" y="150" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--signal)">415.88</text><text x="646" y="168" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">16Δ call</text><text x="646" y="80" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">+13.8%</text></svg><div class="viznote">Each strike is solved numerically for its delta rather than read off a chart level. The asymmetry between the put and call wings is the volatility skew of the underlying, not a modelling artefact.</div></div>
+    <div class="viz"><div class="vizhead"><span class="viztitle">Cushion scales with the square root of time</span><span class="vizmeta">16Δ put · vol 45.8%</span></div><svg viewBox="0 0 740 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart of 16-delta put distance from spot against days to expiry, growing with the square root of time."><text x="46" y="37" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">14 DTE</text><rect x="58" y="22" width="281" height="22" fill="var(--edge)" opacity="0.35" rx="2"/><text x="351" y="38" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="var(--chalk)">-8.03%</text><text x="46" y="77" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">21 DTE</text><rect x="58" y="62" width="336" height="22" fill="var(--edge)" opacity="0.49" rx="2"/><text x="406" y="78" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="var(--chalk)">-9.60%</text><text x="46" y="117" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">30 DTE</text><rect x="58" y="102" width="392" height="22" fill="var(--edge)" opacity="0.63" rx="2"/><text x="462" y="118" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="var(--chalk)">-11.19%</text><text x="46" y="157" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">45 DTE</text><rect x="58" y="142" width="463" height="22" fill="var(--edge)" opacity="0.77" rx="2"/><text x="533" y="158" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="var(--chalk)">-13.24%</text><text x="46" y="197" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">60 DTE</text><rect x="58" y="182" width="520" height="22" fill="var(--edge)" opacity="0.91" rx="2"/><text x="590" y="198" font-family="IBM Plex Mono,monospace" font-size="12.5" fill="var(--chalk)">-14.86%</text></svg><div class="viznote">At a fixed delta, strike distance from spot grows roughly with √T. Doubling the tenor from 30 to 60 days buys about a third more distance, not twice as much. The terminal computes this rather than approximating it.</div></div>
+  </div>
+</section>
 
-<footer>
-  <span>© 2026 VRP Quant</span>
-  <span><a href="https://vrpquant.streamlit.app">Open the terminal</a></span>
-</footer>
+<section class="block" id="verification">
+  <div class="wrap">
+    <div class="eyebrow">Verification</div>
+    <h2>Proof that runs in public on every commit.</h2>
+    <p class="lede">No market data, no API keys, no network. Each check is a closed-form identity
+    or a convergence property — true or false independently of any market view. The suite exits
+    non-zero on failure, so a passing run cannot be a silent one.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Property tested</th><th>Result</th></tr>
+      <tr><td>Put-call parity across dividend yields</td><td>Holds</td></tr>
+      <tr><td>Dividend yield applied exactly once</td><td>Exact</td></tr>
+      <tr><td>CRR European convergence to Black-Scholes</td><td>0.003% @ 200</td></tr>
+      <tr><td>American ≥ European, early exercise non-negative</td><td>Holds</td></tr>
+      <tr><td>One-sigma bands vs true lognormal quantile</td><td>Exact</td></tr>
+      <tr><td>One-sigma breach probability vs theory</td><td>15.87 / 15.87</td></tr>
+      <tr><td>Volatility estimator independent of input length</td><td>Stable</td></tr>
+      <tr><td>Monte Carlo memory bounded at maximum paths</td><td>48 MB @ 50k</td></tr>
+    </table></div>
+    <div class="viz"><div class="vizhead"><span class="viztitle">Lattice convergence to closed form</span><span class="vizmeta">European put · S=K=100 · 30 DTE · σ=30% · q=2%</span></div><svg viewBox="0 0 740 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Binomial lattice pricing error against Black-Scholes falling as step count rises, with the shipped averaged tree far below the tolerance line."><line x1="64" y1="236" x2="680" y2="236" stroke="var(--border-lt)" stroke-width="1"/><line x1="64" y1="42" x2="64" y2="236" stroke="var(--border-lt)" stroke-width="1"/><line x1="64" y1="202" x2="680" y2="202" stroke="var(--risk)" stroke-width="1" stroke-dasharray="5 4" opacity=".75"/><text x="676" y="194" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--risk)">0.10% tolerance</text><path d="M64.0,62.9 L183.2,149.0 L302.4,192.5 L421.6,214.7 L540.8,224.9 L660.0,230.9" fill="none" stroke="var(--mute)" stroke-width="1.5"/><circle cx="64.0" cy="62.9" r="3.5" fill="var(--mute)"/><text x="64.0" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">50</text><circle cx="183.2" cy="149.0" r="3.5" fill="var(--mute)"/><text x="183.2" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">100</text><circle cx="302.4" cy="192.5" r="3.5" fill="var(--mute)"/><text x="302.4" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">200</text><circle cx="421.6" cy="214.7" r="3.5" fill="var(--mute)"/><text x="421.6" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">400</text><circle cx="540.8" cy="224.9" r="3.5" fill="var(--mute)"/><text x="540.8" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">800</text><circle cx="660.0" cy="230.9" r="3.5" fill="var(--mute)"/><text x="660.0" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">1600</text><text x="64" y="51" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">0.512%</text><circle cx="302.4" cy="235.0" r="6" fill="var(--edge)"/><line x1="302.4" y1="225.0" x2="302.4" y2="135" stroke="var(--edge)" stroke-width="1" stroke-dasharray="3 3"/><text x="312" y="129" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">shipped: averaged 200/201 tree — 0.003%</text><text x="20" y="140" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)" transform="rotate(-90 20 140)" text-anchor="middle">error vs Black-Scholes</text><text x="372" y="278" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">lattice steps (log scale)</text></svg><div class="viznote">A single lattice oscillates around the true price depending on where the strike falls between terminal nodes. Averaging adjacent depths cancels it: 0.003% at a nominal 200 steps, rather than paying for a 1,600-step tree to reach 0.015%.</div></div>
+    <p class="table-note">These establish that the arithmetic is correct. They say nothing about
+    whether any given trade is profitable, and are not offered as though they did.</p>
+    <div class="btns"><a class="cta ghost" href="audit.html">Read the full report</a></div>
+  </div>
+</section>
 
-</div>
-</body>
-</html>
+<section class="block" id="access">
+  <div class="wrap">
+    <div class="eyebrow">Instrument Access</div>
+    <h2>Founding cohort. Two tiers, one rate that doesn't move.</h2>
+    <p class="lede">Founding rates below. They rise for members who join after the cohort closes;
+    yours does not increase while your subscription stays active. That is not a marketing device —
+    PayPal subscription plans are fixed price, so the figure you subscribe at is the figure that
+    bills, permanently, on that plan.</p>
+    <div class="plans">
+      <div class="plan">
+        <div class="plan-name">Analyst</div>
+        <!-- PRICE $119 founding (PAYPAL_ANALYST_LINK). PAYPAL TRAP - plans are FIXED PRICE.
+             Editing this figure does NOT change what an existing subscriber is charged.
+             A price change needs a NEW PayPal plan and a NEW plan_id in Streamlit
+             secrets (PAYPAL_ANALYST_LINK). -->
+        <div class="plan-price">$119<span style="font-size:17px;color:var(--mute2)">/mo</span></div>
+        <div class="plan-sub">Founding rate · monthly · cancel any time</div>
+        <ul>
+          <li>Institutional Market Scanner, full universe</li>
+          <li>Deep Dive with all six strike bases</li>
+          <li>Black-Scholes Greeks and CRR convergence panel</li>
+          <li>Monte Carlo to 10,000 paths</li>
+          <li>Six-source data waterfall with health reporting</li>
+        </ul>
+      </div>
+      <div class="plan lead">
+        <div class="plan-name">Apex Ultimate</div>
+        <!-- PRICE $199 founding (PAYPAL_APEX_LINK). Same fixed-price trap applies.
+             NOTE: display name is "Apex Ultimate". The backend identifier stays
+             GOD_MODE in Supabase rows and secret names - never rename it in code. -->
+        <div class="plan-price">$199<span style="font-size:17px;color:var(--mute2)">/mo</span></div>
+        <div class="plan-sub">Founding rate · monthly · cancel any time</div>
+        <ul>
+          <li>Everything in Analyst</li>
+          <li>Monte Carlo to 50,000 paths with Merton jump diffusion</li>
+          <li>GARCH(1,1) forecasting, walk-forward out of sample</li>
+          <li>Regime detection and sector strength</li>
+          <li>Custom watchlists and the APEX-100 universe</li>
+        </ul>
+      </div>
+    </div>
+    <div class="btns"><a class="cta" href="https://vrpquant.streamlit.app">Open the terminal</a></div>
+  </div>
+</section>
+
+
+<section class="block" id="contact">
+  <div class="wrap">
+    <div class="eyebrow">Contact</div>
+    <h2>Ask before you subscribe.</h2>
+    <p class="lede">Questions about methodology, data sources, what a tier includes, or billing —
+    <a href="mailto:access@vrpquant.com" style="color:var(--edge)">access@vrpquant.com</a>. A person
+    reads it.</p>
+    <p class="lede" style="margin-top:18px">What that address will not do is tell you whether to put
+    on a specific trade. VRP Quant is a research tool, not an advisor, and answering individual
+    position questions would make it something it is not registered to be. Ask how a number is
+    computed and you will get a real answer. Ask whether to sell a particular put and you will get
+    this paragraph back.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="eyebrow">Before You Ask</div>
+    <h2>Straight answers, including the ones that don't sell harder.</h2>
+
+    <div class="faq-item"><h3>Does the verification report mean the signals make money?</h3>
+      <p>No, and it is not offered as though it does. It proves the pricing mathematics is correct.
+      Pricing an option right is a necessary condition for the tool to be worth anything and not a
+      sufficient one. Anyone conflating the two is selling you something.</p></div>
+
+    <div class="faq-item"><h3>Is there a backtest with a return figure?</h3>
+      <p>The terminal runs a walk-forward out-of-sample backtest and shows it inside the product with
+      a hypothetical-performance disclaimer attached. Those numbers are not reproduced on this page,
+      because a simulated result presented as marketing is a performance claim and this is a research
+      tool, not a track record.</p></div>
+
+    <div class="faq-item"><h3>Where does the data come from?</h3>
+      <p>Six sources in a defined waterfall. Free-tier limits are real and the terminal tells you when
+      it hits one rather than silently substituting stale data. The sidebar reports which source
+      served each request.</p></div>
+
+    <div class="faq-item"><h3>Can I verify the report myself?</h3>
+      <p>Yes. It is generated by the test suite in the repository and run by GitHub Actions against
+      the commit named in its header. The report names the engine version it certifies, and the terminal shows its version in
+      the sidebar. Where the two agree, the software you are using is the software that was proven.</p></div>
+
+    <div class="faq-item"><h3>Will the founding rate go up later?</h3>
+      <p>Not for you. PayPal subscription plans are fixed price, so the rate you subscribe at is the
+      rate that bills for as long as the subscription stays active. New members joining after the
+      cohort closes pay the standard rate. Cancel and rejoin later and you rejoin at whatever is
+      current, so the lock holds only while the subscription runs uninterrupted.</p></div>
+
+    <div class="faq-item"><h3>Does it place trades?</h3>
+      <p>No. There is no broker connection, no order routing and no execution of any kind. It is a
+      research terminal. You take your own decisions to your own broker.</p></div>
+  </div>
+</section>
+
+</main>
+<footer><div class="wrap">
+  <div class="disclaimer"><b>Risk disclosure.</b> VRP Quant is a quantitative research tool. It is
+  not a registered investment advisor, broker-dealer or financial planner, and nothing it produces
+  is a recommendation to buy or sell any security. All outputs are for informational and educational
+  purposes only. Options trading carries substantial risk, including the risk of losing more than
+  your initial investment. Verify all data independently before acting on it.</div>
+  <div class="foot">© 2026 vrpquant.com. All rights reserved. · <a href="mailto:access@vrpquant.com">access@vrpquant.com</a> · <a href="audit.html">Verification report</a></div>
+</div></footer>
+</body></html>
