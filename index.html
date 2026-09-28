@@ -1,4 +1,18 @@
 <!doctype html>
+<!--
+  vrpquant.com index — aligned with terminal v30.5.17.
+  [DOC-147] 2026-09-28
+    * "public continuous integration" / "runs in public" corrected: the suite
+      runs in CI on the terminal's private repository; what is public is the
+      report, its engine fingerprint and package versions. The FAQ on
+      verifying the report now says exactly what a reader can and cannot check.
+    * Three modules: Scan Journal added (a measurement of the model, never a
+      performance record; no journal results are shown on this page).
+    * Architecture: Scan Journal and Access control rows; risk-free fallback.
+    * Verification table: six rows for the v30.5.16-17 checks.
+    * Version, check count and report stamps untouched (written by the
+      publish pipeline).
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -122,8 +136,8 @@ a:focus-visible,.cta:focus-visible{outline:2px solid var(--edge);outline-offset:
     <div class="eyebrow">Product Dossier &nbsp;·&nbsp; v30.5.17</div>
     <h1>Verified math.<br><em>Not asserted.</em></h1>
     <p class="lede">Every build of the VRP Quant terminal runs a deterministic proof suite in
-    public continuous integration. The report it produces is published on this site, stamped with
-    the commit hash you can read in the terminal sidebar. If the mathematics breaks, the build
+    continuous integration before it can deploy. The report it produces is published on this site,
+    stamped with the engine fingerprint and commit you can read in the terminal sidebar. If the mathematics breaks, the build
     goes red and it does not ship.</p>
     <div class="verify-strip">
       <div><div class="k">Verification</div><div class="v pos">Pass</div></div>
@@ -142,9 +156,10 @@ a:focus-visible,.cta:focus-visible{outline:2px solid var(--edge);outline-offset:
   <div class="wrap">
     <div class="eyebrow">Product Description</div>
     <h2>A variance risk premium research terminal that shows its working.</h2>
-    <p class="lede">Two modules. The Scanner ranks a universe on volatility-regime and
+    <p class="lede">Three modules. The Scanner ranks a universe on volatility-regime and
     premium-richness criteria. Deep Dive takes one name and prices a position three ways from the
-    same inputs, then shows you how far the three disagree.</p>
+    same inputs, then shows you how far the three disagree. The Scan Journal logs every name the
+    Scanner scores and, once each horizon has passed, measures the model against what followed.</p>
     <p class="lede">What it does not do is hand you a trade and hide the derivation. Every strike
     is traceable to a stated basis, every volatility figure to a stated estimator, every price to
     a stated model, and every data point to the source that actually served it.</p>
@@ -182,13 +197,29 @@ a:focus-visible,.cta:focus-visible{outline:2px solid var(--edge);outline-offset:
         keeps them as separate choices rather than quietly conflating them.</p></div>
       <div class="spec-row"><h3>Live discount rate</h3>
         <p>Discounting uses the current three-month Treasury yield pulled from FRED and dated on
-        screen, not a hardcoded constant left over from whenever the file was written.</p></div>
+        screen, not a hardcoded constant left over from whenever the file was written. If FRED is
+        unreachable, the 13-week T-bill index stands in and the screen says so.</p></div>
       <div class="spec-row"><h3>Build traceability</h3>
         <p>The terminal's sidebar shows its version, the engine file's SHA-256 fingerprint and the
         commit it was deployed from; the verification report prints the same fingerprint and the
         exact package versions it ran against. Where they match, the software in front of you is
         the software that was proven. The terminal deploys only from a branch that advances after
         the verification suite and a smoke test of every screen pass.</p></div>
+      <div class="spec-row"><h3>Scan Journal: the model, measured</h3>
+        <p>Every scanned name is logged with its readings and one standard reference position, a
+        short 16-delta put priced at the logged implied volatility with the name's dividend yield.
+        When its horizon passes, the journal records whether implied volatility exceeded the
+        volatility that followed — measured with the same Yang-Zhang estimator as the entry reading —
+        and whether the reference put finished above breakeven. Names scanned in the same month ride
+        the same market, so every 95% interval is sized on an effective sample, not the row count.
+        It is a calibration instrument for the model. It is not a performance record, and no journal
+        result appears on this page.</p></div>
+      <div class="spec-row"><h3>Access control</h3>
+        <p>Passwords are stored only as bcrypt hashes. Six failed logins in fifteen minutes lock an
+        account for fifteen minutes, and the lock survives a restart. Existing and non-existent
+        usernames are handled identically, so the login page reveals nothing about who has an
+        account. No database table is reachable with the public key, and the verification suite
+        audits every setup script and scans the repository for committed credentials on every build.</p></div>
     </div>
     <div class="viz"><div class="vizhead"><span class="viztitle">Source health, as captured</span><span class="vizmeta">one Deep Dive · 2026-09-21</span></div><div class="wf"><div class="wfrow"><span class="n">01</span><span class="s">Alpha Vantage · quote</span><span class="st ok"><i></i>served</span></div><div class="wfrow"><span class="n">02</span><span class="s">Alpha Vantage · history</span><span class="st fell"><i></i>fell through</span></div><div class="wfrow"><span class="n">03</span><span class="s">Google Finance · quote</span><span class="st idle"><i></i>not needed</span></div><div class="wfrow"><span class="n">04</span><span class="s">Polygon · quote</span><span class="st idle"><i></i>not needed</span></div><div class="wfrow"><span class="n">05</span><span class="s">Polygon · history</span><span class="st ok"><i></i>served</span></div><div class="wfrow"><span class="n">06</span><span class="s">yfinance · history</span><span class="st idle"><i></i>not needed</span></div><div class="wfrow"><span class="n">07</span><span class="s">FRED · risk-free rate</span><span class="st ok"><i></i>served</span></div></div><div class="viznote">Amber on rung 02 is the free-tier limit being hit and the waterfall moving down to Polygon. The terminal reports the outcome of the request, not whether a key is configured — a throttled reply arrives as a success and is caught rather than trusted.</div></div>
   </div>
@@ -290,7 +321,7 @@ a:focus-visible,.cta:focus-visible{outline:2px solid var(--edge);outline-offset:
 <section class="block" id="verification">
   <div class="wrap">
     <div class="eyebrow">Verification</div>
-    <h2>Proof that runs in public on every commit.</h2>
+    <h2>Proof that runs on every commit, published in full.</h2>
     <p class="lede">No market data, no API keys, no network. Each check is a closed-form identity
     or a convergence property — true or false independently of any market view. The suite exits
     non-zero on failure, so a passing run cannot be a silent one.</p>
@@ -321,6 +352,12 @@ a:focus-visible,.cta:focus-visible{outline:2px solid var(--edge);outline-offset:
 <tr><td>Realised volatility matches the textbook Yang-Zhang estimator</td><td>Holds</td></tr>
 <tr><td>Market-data adapter: IV solved, never copied; one price snapshot</td><td>Holds</td></tr>
 <tr><td>No account or order endpoint reachable from the code</td><td>Holds</td></tr>
+<tr><td>Journal intervals sized on the effective sample, not the row count</td><td>19 of 400 correlated</td></tr>
+<tr><td>Journal reference put carries the dividend yield</td><td>Exact</td></tr>
+<tr><td>Journal forward volatility uses the entry estimator (Yang-Zhang)</td><td>Holds</td></tr>
+<tr><td>Database closed to the public key; login lock survives a restart</td><td>Holds</td></tr>
+<tr><td>No credential committed to the repository</td><td>Holds</td></tr>
+<tr><td>Test calendars valid on every weekday</td><td>7 / 7</td></tr>
 </table></div>
     <div class="viz"><div class="vizhead"><span class="viztitle">Lattice convergence to closed form</span><span class="vizmeta">European put · S=K=100 · 30 DTE · σ=30% · q=2%</span></div><svg viewBox="0 0 740 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Binomial lattice pricing error against Black-Scholes falling as step count rises, with the shipped averaged tree far below the tolerance line."><line x1="64" y1="236" x2="680" y2="236" stroke="var(--border-lt)" stroke-width="1"/><line x1="64" y1="42" x2="64" y2="236" stroke="var(--border-lt)" stroke-width="1"/><line x1="64" y1="202" x2="680" y2="202" stroke="var(--risk)" stroke-width="1" stroke-dasharray="5 4" opacity=".75"/><text x="676" y="194" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--risk)">0.10% tolerance</text><path d="M64.0,62.9 L183.2,149.0 L302.4,192.5 L421.6,214.7 L540.8,224.9 L660.0,230.9" fill="none" stroke="var(--mute)" stroke-width="1.5"/><circle cx="64.0" cy="62.9" r="3.5" fill="var(--mute)"/><text x="64.0" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">50</text><circle cx="183.2" cy="149.0" r="3.5" fill="var(--mute)"/><text x="183.2" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">100</text><circle cx="302.4" cy="192.5" r="3.5" fill="var(--mute)"/><text x="302.4" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">200</text><circle cx="421.6" cy="214.7" r="3.5" fill="var(--mute)"/><text x="421.6" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">400</text><circle cx="540.8" cy="224.9" r="3.5" fill="var(--mute)"/><text x="540.8" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">800</text><circle cx="660.0" cy="230.9" r="3.5" fill="var(--mute)"/><text x="660.0" y="254" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">1600</text><text x="64" y="51" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">0.512%</text><circle cx="540.8" cy="224.9" r="6" fill="var(--edge)"/><line x1="540.8" y1="214.9" x2="540.8" y2="135" stroke="var(--edge)" stroke-width="1" stroke-dasharray="3 3"/><text x="540.8" y="129" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--edge)">shipped: averaged 800/801 tree — 0.0001%</text><text x="20" y="140" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)" transform="rotate(-90 20 140)" text-anchor="middle">error vs Black-Scholes</text><text x="372" y="278" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--mute2)">lattice steps (log scale)</text></svg><div class="viznote">A single lattice oscillates around the true price depending on where the strike falls between terminal nodes. Averaging adjacent depths cancels it. The shipped default is a nominal 800 steps, which holds 640 of 640 European test cases inside 0.1% of the closed-form price and puts the American price within 0.135% of a 4,000-step reference.</div></div>
     <p class="table-note">These establish that the arithmetic is correct. They say nothing about
@@ -379,9 +416,20 @@ a:focus-visible,.cta:focus-visible{outline:2px solid var(--edge);outline-offset:
       served each request, and every price on the analysis page says how fresh it is.</p></div>
 
     <div class="faq-item"><h3>Can I verify the report myself?</h3>
-      <p>Yes. It is generated by the test suite in the repository and run by GitHub Actions against
-      the commit named in its header. The report names the engine version it certifies, and the terminal shows its version in
-      the sidebar. Where the two agree, the software you are using is the software that was proven.</p></div>
+      <p>You can check that it applies to the software you are using. The report is generated by the
+      test suite and run by GitHub Actions against the commit named in its header, and it prints the
+      engine file's SHA-256 fingerprint and the exact package versions it ran against. The terminal
+      sidebar shows the same version, fingerprint and commit. Where they agree, the software in front
+      of you is the software that was proven. The terminal's source repository is private, so the
+      suite itself cannot be re-run from outside; the report is published in full so the result can be
+      read rather than taken on trust.</p></div>
+
+    <div class="faq-item"><h3>What is the Scan Journal, and where are its results?</h3>
+      <p>It logs each scanned name with a standard reference position and later checks the model
+      against what followed: did implied volatility exceed realised, and did the reference put finish
+      above breakeven. Its results stay inside the terminal, stated with their effective sample size
+      and interval. They are measurements of the model, not trading results, and are deliberately not
+      reproduced here.</p></div>
 
     <div class="faq-item"><h3>Does it place trades?</h3>
       <p>No. There is no order routing and no execution of any kind — the code cannot reach an
